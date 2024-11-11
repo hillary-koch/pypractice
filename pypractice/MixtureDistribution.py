@@ -54,6 +54,11 @@ class MixtureDistribution():
     def _count_components(x: dict[str, int]):
         return sum(x.values())
 
+    @staticmethod
+    def _do_call(distr, method, **kwargs):
+        fun = getattr(globals()[distr], method)
+        return fun(**kwargs)
+
     # Private class methods ------------------------------------------------
     def _check_components(self, x: dict[str, int]):
         if not all([dist in self.supported_distns for dist in x.keys()]):
@@ -74,7 +79,7 @@ class MixtureDistribution():
         self._check_components(components)
         components = {key: self.components.get(
             key, 0) + components.get(key, 0) for key in (self.components.keys() | components.keys())}
-        
+
         # Re-initialize after changing components
         self.__init__(components)
 
@@ -86,15 +91,15 @@ class MixtureDistribution():
         """
         Returns the density of x in each component
         """
-        return [eval(f"{prop} * {dist}.pdf({x}, loc = {loc}, scale = {scale})")
-                for dist, prop, loc, scale in self._get_component_iterator()]
+        return [ prop * self._do_call(distr, "pdf", x=x, loc=loc, scale=scale) for
+                distr, prop, loc, scale in self._get_component_iterator() ]
 
     def logpdf(self, x):
         """
         Returns the log density of x in each component
         """
-        return [eval(f"np.log({prop}) + {dist}.logpdf({x}, loc = {loc}, scale = {scale})")
-                for dist, prop, loc, scale in self._get_component_iterator()]
+        return [ np.log(prop) + self._do_call(distr, "logpdf", x=x, loc=loc, scale=scale) for
+                distr, prop, loc, scale in self._get_component_iterator() ]
 
     def cdf(self):
         raise NotImplementedError(f"This method not yet implemented for {

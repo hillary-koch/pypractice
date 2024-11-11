@@ -21,10 +21,10 @@ myiter = zip(
 )
 [ eval(f"{prop} * {dist}.pdf({x}, loc = {loc}, scale = {scale})") for dist, prop, loc, scale in myiter ]
 
-
+mydist._do_call('expon', 'pdf', x=1)
 mydist.k
 mydist.add_components(components={"norm": 3})
 mydist.k
 mydist.pdf(x = 1)
-mydist.logpdf()
-mydist.ll()
+mydist.logpdf(x = 2)
+# mydist.ll()

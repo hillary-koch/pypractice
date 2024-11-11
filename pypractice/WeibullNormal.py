@@ -8,3 +8,5 @@ class WeibullNormalMixture(MixtureDistribution):
     @property
     def supported_distns(self):
         return ['weibull_min', 'norm']
+    
+dir(__builtins__)
