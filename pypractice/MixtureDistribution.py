@@ -25,10 +25,6 @@ class MixtureDistribution():
     def supported_distns(self):
         return self.__supported_distns
     
-    # @supported_distns.setter
-    # def supported_distns(self, value: typing.Union[list[str], str]) -> None:
-    #     self.__supported_distns = value
-    
     @property
     def params(self):
         return self.__params
