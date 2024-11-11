@@ -7,7 +7,7 @@ class MixtureDistribution():
         The keys in the `components` dictionary must be found in this array.
     """
     
-    __supported_distns = ['norm', 'weibull_min', 'exp']
+    __supported_distns = ['norm', 'weibull_min', 'expon']
     
     def __init__(self, components: dict[str, int]):
         """

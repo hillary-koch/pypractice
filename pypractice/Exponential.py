@@ -7,4 +7,4 @@ class ExponentialMixture(MixtureDistribution):
 
     @property
     def supported_distns(self):
-        return ['exp']
+        return ['expon']
