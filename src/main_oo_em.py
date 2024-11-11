@@ -1,4 +1,10 @@
-from pypractice import Normal
+"""
+(Eventually)
+Runs an EM algorithm to estimate the parameters of a mixture model
+Code is written using object-oriented programming
+"""
+
+from pypractice import NormalMixture
 
 mydist = NormalMixture({"norm": 2})
 

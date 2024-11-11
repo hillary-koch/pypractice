@@ -1,10 +1,11 @@
+"""
+Runs an EM algorithm to estimate the parameters of a Weibull-Normal mixture model
+Code is written using functional programming
+"""
 import numpy as np
 import pypractice 
 import matplotlib.pyplot as plt
 from scipy.stats import weibull_min, norm
-
-# import importlib
-# importlib.reload(pypractice)
 
 # generate data
 weib = weibull_min.rvs(c = 10, scale = 4, loc = 0, size = (200,))

@@ -1,3 +1,6 @@
+"""
+Equivalent to R's tidyr::tribble; a clever use of iterators
+"""
 import pandas as pd
 
 def tribble(columns, *data):

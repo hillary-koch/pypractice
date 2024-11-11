@@ -1,4 +1,4 @@
-from .utils import *
+from .tribble import *
 from .em_utils_functional import *
 from .Exponential import *
 from .MixtureDistribution import *
