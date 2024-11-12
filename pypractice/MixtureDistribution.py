@@ -23,11 +23,25 @@ class MixtureDistribution():
         self._check_components(components)
         self.k = self._count_components(components)
         self.__components = components
+        
+        # """
+        #     (alternatively, consider specifying None for loc as a keyword argument)
+        #     Positional arguments:
+        #     weibull_min: c, loc (without specifying loc, it defaults to 0)
+        #     norm: loc
+        #     expon: loc
+        # """
         self.__params = {
             'prop': np.ones(shape=(self.k,))/self.k,
-            'loc': np.empty(shape=(self.k,)),
+            'positional': [ 1 if key is "weibull_min" else 0 for key in self.components.keys()],
             'scale': np.ones(shape=(self.k,))
         }
+
+        # Distribution support ---------
+        self.__a = min([getattr(globals()[distr], 'a')
+                       for distr in self.components.keys()])
+        self.__b = max([getattr(globals()[distr], 'b')
+                       for distr in self.components.keys()])
 
         # Initialize ll as -inf; without x this is meaningless
         self.__ll = float("-inf")
@@ -46,6 +60,14 @@ class MixtureDistribution():
         return self.__components
 
     @property
+    def a(self):
+        return self.__a
+
+    @property
+    def b(self):
+        return self.__b
+
+    @property
     def ll(self):
         return self.__ll
 
@@ -55,9 +77,9 @@ class MixtureDistribution():
         return sum(x.values())
 
     @staticmethod
-    def _do_call(distr, method, **kwargs):
+    def _do_call(distr, method, *args, **kwargs):
         fun = getattr(globals()[distr], method)
-        return fun(**kwargs)
+        return fun(*args, **kwargs)
 
     # Private class methods ------------------------------------------------
     def _check_components(self, x: dict[str, int]):
@@ -70,7 +92,7 @@ class MixtureDistribution():
             [key for key in self.components.keys()
              for value in range(self.components[key])],
             self.params['prop'],
-            self.params['loc'],
+            self.params['positional'],
             self.params['scale']
         )
 
@@ -89,23 +111,29 @@ class MixtureDistribution():
 
     def pdf(self, x):
         """
-        Returns the density of x in each component
+        Returns the density of x as an array the same shape as x
         """
-        return [ prop * self._do_call(distr, "pdf", x=x, loc=loc, scale=scale) for
-                distr, prop, loc, scale in self._get_component_iterator() ]
+        pdf_component = [prop * self._do_call(distr, "pdf", x, positional, scale=scale) for
+                         distr, prop, positional, scale in self._get_component_iterator()]
+        return np.sum(pdf_component, axis=0)
 
     def logpdf(self, x):
         """
         Returns the log density of x in each component
         """
-        return [ np.log(prop) + self._do_call(distr, "logpdf", x=x, loc=loc, scale=scale) for
-                distr, prop, loc, scale in self._get_component_iterator() ]
+        return [np.log(prop) + self._do_call(distr, "logpdf", x, positional, scale=scale) for
+                distr, prop, positional, scale in self._get_component_iterator()]
 
-    def cdf(self):
-        raise NotImplementedError(f"This method not yet implemented for {
-                                  self.__class__} class.")
+    def cdf(self, x):
+        """
+        Returns the cdf of x in each component
+        """
+        cdf_component = [prop * self._do_call(distr, "cdf", x, positional, scale=scale) for
+                         distr, prop, positional, scale in self._get_component_iterator()]
+        return np.sum(cdf_component, axis=0)
 
-    def ppf(self):
+    def ppf(self, x, bounds):
+
         raise NotImplementedError(f"This method not yet implemented for {
                                   self.__class__} class.")
 
@@ -116,3 +144,4 @@ class MixtureDistribution():
     # def ll(self, x):
     #     ll = sum(self.pdf(x))
     #     self.ll = ll
+norm.b
