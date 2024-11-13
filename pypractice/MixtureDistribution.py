@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import norm, weibull_min, expon
+from scipy.interpolate import interp1d
 
 
 class MixtureDistribution():
@@ -23,7 +24,7 @@ class MixtureDistribution():
         self._check_components(components)
         self.k = self._count_components(components)
         self.__components = components
-        
+
         # """
         #     (alternatively, consider specifying None for loc as a keyword argument)
         #     Positional arguments:
@@ -33,7 +34,8 @@ class MixtureDistribution():
         # """
         self.__params = {
             'prop': np.ones(shape=(self.k,))/self.k,
-            'positional': [ 1 if key is "weibull_min" else 0 for key in self.components.keys()],
+            'positional': [1 if key == "weibull_min" else 0 for key in
+                           [key for key in self.components.keys() for value in range(self.components[key])]],
             'scale': np.ones(shape=(self.k,))
         }
 
@@ -132,10 +134,27 @@ class MixtureDistribution():
                          distr, prop, positional, scale in self._get_component_iterator()]
         return np.sum(cdf_component, axis=0)
 
-    def ppf(self, x, bounds):
+    def ppf(self, x, minx=None, maxx=None, n_approx_pts=10000):
+        
+        if self.a != float("-inf"):
+            approx_a = self.a
+        else:
+            if minx is None:
+                raise ValueError(f"With infinite lower bound, `minx` must be specified.")
+            approx_a = minx
 
-        raise NotImplementedError(f"This method not yet implemented for {
-                                  self.__class__} class.")
+        if self.b != float("inf"):
+            approx_b = self.b
+        else:
+            if maxx is None:
+                raise ValueError(f"With infinite upper bound, `maxx` must be specified.")
+            approx_b = maxx
+
+        approx_pts = np.linspace(approx_a, approx_b, n_approx_pts)
+        y = self.cdf(approx_pts)
+        myfun = interp1d(y, approx_pts, kind='linear')
+
+        return myfun(x)
 
     def fit(self):
         pass
@@ -144,4 +163,3 @@ class MixtureDistribution():
     # def ll(self, x):
     #     ll = sum(self.pdf(x))
     #     self.ll = ll
-norm.b

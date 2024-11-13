@@ -15,8 +15,12 @@ mydist.add_components(components={"norm": 1, "weibull_min": 1})
 # mydist.k
 
 mydist.components
-mydist.pdf(x = 1)
+mydist.pdf(x = [0,1,2])
 mydist.params
+
+mydist.pdf(x = [[0,2,3,1,3,-2]])
+mydist.pdf(x = [[0,2,3], [1,3,-2]])
+mydist.ppf(x = [0.1,.2,.3,.9], minx = -100, maxx = 100)
 # mydist.logpdf(x = [1,2])
 # # mydist.ll()
 # help(weibull_min)
