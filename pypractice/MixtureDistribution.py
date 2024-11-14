@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import norm, weibull_min, expon
 from scipy.interpolate import interp1d
+from pypractice import logsumexp
 
 
 class MixtureDistribution():
@@ -22,7 +23,7 @@ class MixtureDistribution():
         }
         """
         self._check_components(components)
-        self.k = self._count_components(components)
+        self.__k = self._count_components(components)
         self.__components = components
 
         # """
@@ -44,6 +45,8 @@ class MixtureDistribution():
                        for distr in self.components.keys()])
         self.__b = max([getattr(globals()[distr], 'b')
                        for distr in self.components.keys()])
+        
+        self._Estep()
 
         # Initialize ll as -inf; without x this is meaningless
         self.__ll = float("-inf")
@@ -56,10 +59,18 @@ class MixtureDistribution():
     @property
     def params(self):
         return self.__params
+    
+    @property
+    def k(self):
+        return self.__k
 
     @property
     def components(self):
         return self.__components
+    
+    @property
+    def z(self):
+        return self.__z
 
     @property
     def a(self):
@@ -123,8 +134,8 @@ class MixtureDistribution():
         """
         Returns the log density of x in each component
         """
-        return [np.log(prop) + self._do_call(distr, "logpdf", x, positional, scale=scale) for
-                distr, prop, positional, scale in self._get_component_iterator()]
+        return np.transpose([np.log(prop) + self._do_call(distr, "logpdf", x, positional, scale=scale) for
+                distr, prop, positional, scale in self._get_component_iterator()])
 
     def cdf(self, x):
         """
@@ -155,6 +166,11 @@ class MixtureDistribution():
         myfun = interp1d(y, approx_pts, kind='linear')
 
         return myfun(x)
+    
+    def _Estep(self, x):
+        self.__z = self.logpdf(x)
+        self.__z -= np.apply_along_axis(logsumexp, 1, self.__z)
+        
 
     def fit(self):
         pass

@@ -6,11 +6,7 @@ from statsmodels.regression.linear_model import OLS
 from scipy.stats import weibull_min, norm
 from scipy.optimize import minimize_scalar
 from scipy.interpolate import interp1d
-
-def logsumexp(lp):
-    y = np.max(lp)
-    return np.log(np.sum(np.exp(lp-y), keepdims=True)) + y
-
+from pypractice import logsumexp
 
 def ppoints(n, a=None):
     if len(n) > 1:

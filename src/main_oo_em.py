@@ -27,6 +27,8 @@ mydist.ppf(x = [0.1,.2,.3,.9], minx = -100, maxx = 100)
 # weibull_min.pdf([1,2,3], 1, scale = 2)
 # expon.pdf([1,2,3], 1)
 
+mydist.Estep([1,2,3])
+
 
 # if i change how parameters are specified, i.e. move away from some positional arguments,
 #   but specify kwargs as None for distributions that don't have/use a given kwarg,
@@ -47,3 +49,10 @@ testcall("norm", "pdf", [[1,2], 2.5], loc = 2.5, scale = 1)
 
 # works
 testcall("norm", "pdf", [[1,2], None], loc = 2.5, scale = 1)
+
+ttt = [1,2,3]
+len(ttt)
+ttt = [[1,2,3]]
+ttt.shape
+
+(np.shape(ttt),6)
