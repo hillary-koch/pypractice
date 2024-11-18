@@ -28,7 +28,8 @@ mydist.ppf(x = [0.1,.2,.3,.9], minx = -100, maxx = 100)
 # expon.pdf([1,2,3], 1)
 
 mydist.Estep([1,2,3])
-
+mydist.rvs(size = (3,20))
+mydist.Mstep([1,2,3])
 
 # if i change how parameters are specified, i.e. move away from some positional arguments,
 #   but specify kwargs as None for distributions that don't have/use a given kwarg,

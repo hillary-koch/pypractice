@@ -168,7 +168,7 @@ def weibull_normal_em(
         'iters': step + 1
     }
 
-def weibnormix(n: int, object):
+def rweibnormix(n: int, object):
     params = object.get('parameters')
     cl = choices([0,1],k=n, weights = params['prop'])
     cl.sort()

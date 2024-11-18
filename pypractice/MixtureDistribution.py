@@ -1,7 +1,8 @@
 import numpy as np
+from random import choices
 from scipy.stats import norm, weibull_min, expon
 from scipy.interpolate import interp1d
-from pypractice import logsumexp
+from pypractice.logsumexp import logsumexp
 
 
 class MixtureDistribution():
@@ -45,8 +46,6 @@ class MixtureDistribution():
                        for distr in self.components.keys()])
         self.__b = max([getattr(globals()[distr], 'b')
                        for distr in self.components.keys()])
-        
-        self._Estep()
 
         # Initialize ll as -inf; without x this is meaningless
         self.__ll = float("-inf")
@@ -118,10 +117,16 @@ class MixtureDistribution():
         # Re-initialize after changing components
         self.__init__(components)
 
-    def rvs(self):
-        raise NotImplementedError(f"This method not yet implemented for {
-                                  self.__class__} class.")
-
+    def logpdf(self, x):
+        """
+        Returns the log density of x in each component
+        """
+        return np.transpose([np.log(prop) + self._do_call(distr, "logpdf", x, positional, scale=scale) for
+                distr, prop, positional, scale in self._get_component_iterator()])
+        
+    def loglikelihood(self, x):
+        pass
+    
     def pdf(self, x):
         """
         Returns the density of x as an array the same shape as x
@@ -130,22 +135,37 @@ class MixtureDistribution():
                          distr, prop, positional, scale in self._get_component_iterator()]
         return np.sum(pdf_component, axis=0)
 
-    def logpdf(self, x):
-        """
-        Returns the log density of x in each component
-        """
-        return np.transpose([np.log(prop) + self._do_call(distr, "logpdf", x, positional, scale=scale) for
-                distr, prop, positional, scale in self._get_component_iterator()])
-
     def cdf(self, x):
         """
-        Returns the cdf of x in each component
+        Returns the cdf of x as an array the same shape as x
         """
         cdf_component = [prop * self._do_call(distr, "cdf", x, positional, scale=scale) for
                          distr, prop, positional, scale in self._get_component_iterator()]
         return np.sum(cdf_component, axis=0)
 
+    def rvs(self, size = 1):
+        
+        # Total observations to generate (in case size is a tuple)
+        tot = np.prod(size)
+        
+        # Simulate true cluster memberships
+        cl = choices(list(range(self.k)), k = tot, weights = self.params['prop'])
+        
+        # Simulate from each
+        rle = [ sum([x == K for x in cl]) for K in range(self.k) ]
+
+        sim = np.empty(tot)
+        idx = 0
+        for n, distr in zip(rle, list(self._get_component_iterator())):
+            sim[idx:(idx+n)] = self._do_call(distr[0], "rvs", distr[2], scale = distr[3], size = n)
+            idx += n
+        return sim.reshape(size)
+
+    
     def ppf(self, x, minx=None, maxx=None, n_approx_pts=10000):
+        """
+        Returns the approximate quantile function (inverse cdf) of x as an array the same shape as x
+        """
         
         if self.a != float("-inf"):
             approx_a = self.a
@@ -167,10 +187,24 @@ class MixtureDistribution():
 
         return myfun(x)
     
-    def _Estep(self, x):
+    def Estep(self, x):
         self.__z = self.logpdf(x)
         self.__z -= np.apply_along_axis(logsumexp, 1, self.__z)
+        self.__z = np.exp(self.__z)
         
+    def Mstep(self, x, weights = False):
+        """
+        Default method should just do numerical optimization for all parameters
+            (except mixing weights).
+        """
+        if weights:
+            # update mixing weights
+            self.params['prop'] = np.mean(self.z, axis = 0)
+
+        else:
+            # update anything else
+            pass 
+
 
     def fit(self):
         pass
