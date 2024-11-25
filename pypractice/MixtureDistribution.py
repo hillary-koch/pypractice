@@ -125,7 +125,10 @@ class MixtureDistribution():
                 distr, prop, positional, scale in self._get_component_iterator()])
         
     def loglikelihood(self, x):
-        pass
+        component_likelihoods = np.exp(self.logpdf(x))
+        
+        return np.log(np.sum(component_likelihoods))
+        
     
     def pdf(self, x):
         """
@@ -159,6 +162,7 @@ class MixtureDistribution():
         for n, distr in zip(rle, list(self._get_component_iterator())):
             sim[idx:(idx+n)] = self._do_call(distr[0], "rvs", distr[2], scale = distr[3], size = n)
             idx += n
+        
         return sim.reshape(size)
 
     
